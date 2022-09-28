@@ -6,9 +6,13 @@ import java.util.Scanner;
 
 public class OCGameOperation extends GameOperation {
 
+    private int orderPlayerTeam;
+    private int chaoPlayerTeam;
 
-    public OCGameOperation(int gameType, int boardScaleRow) {
-        super(gameType, boardScaleRow);
+    private final static int WinRequire =5;
+
+    public OCGameOperation(int gameType, int boardScaleRow, int boardScaleCol) {
+        super(gameType, boardScaleRow, boardScaleCol);
     }
 
     @Override
@@ -16,9 +20,21 @@ public class OCGameOperation extends GameOperation {
         System.out.println("Welcome to Order & Chaos");
         super.menu();
     }
+    public void selectCharacterForPlayer(){
+        System.out.println("Please enter the player number of Order");
+        int num = new Scanner(System.in).nextInt();
+        if(num == 1){
+            orderPlayerTeam= 0;
+            chaoPlayerTeam = 1;
+        }else{
+            orderPlayerTeam= 1;
+            chaoPlayerTeam = 0;
+        }
+    }
 
     @Override
     public boolean checkEnd(Piece piece, int turn) {
+        int TeamNum = turn % 2 == 0 ? 0 : 1;
         int col = piece.getCol();
         int row = piece.getRow();
         row = row * 2 - 2;
@@ -35,7 +51,7 @@ public class OCGameOperation extends GameOperation {
             }
         }
         if(consecutive == boardScaleRow){
-            updateRecord(turn);
+            updateRecord(orderPlayerTeam);
             return true;
         }
         consecutive = 0;
@@ -47,11 +63,42 @@ public class OCGameOperation extends GameOperation {
             }
         }
         if(consecutive == boardScaleRow){
-            updateRecord(turn);
+            updateRecord(orderPlayerTeam);
             return true;
         }
         consecutive = 0;
-        //TODO
+        if(row==col && row % 2 == 0){
+            for(int i=0;i<boardArray.length;i+=2){
+                if(!boardArray[row][col].equals(curPieceType)){
+                    break;
+                }else{
+                    consecutive++;
+                }
+            }
+        }
+        if(consecutive == boardScaleRow){
+            updateRecord(orderPlayerTeam);
+            return true;
+        }
+        consecutive = 0;
+        if(row + col ==  boardArray.length -1){
+            for(int i=0,j=boardArray.length -1;i<boardArray.length && j >=0;i+=2,j-=2){
+                if(!boardArray[row][col].equals(curPieceType)){
+                    break;
+                }else{
+                    consecutive++;
+                }
+            }
+        }
+        if(consecutive == boardScaleRow){
+            updateRecord(orderPlayerTeam);
+            return true;
+        }
+
+        if(turn == boardScaleRow * boardScaleRow - 1){
+            updateRecord(chaoPlayerTeam);
+            return true;
+        }
         return false;
     }
 

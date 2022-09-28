@@ -21,6 +21,7 @@ public class TTTGameOperation extends GameOperation {
 
     @Override
     public boolean checkEnd(Piece piece, int turn) {
+        int TeamNum = turn % 2 == 0 ? 0 : 1;
         int col = piece.getCol();
         int row = piece.getRow();
         row = row * 2 - 2;
@@ -37,7 +38,7 @@ public class TTTGameOperation extends GameOperation {
             }
         }
         if(consecutive == boardScaleRow){
-            updateRecord(turn);
+            updateRecord(TeamNum);
             return true;
         }
         consecutive = 0;
@@ -49,21 +50,38 @@ public class TTTGameOperation extends GameOperation {
             }
         }
         if(consecutive == boardScaleRow){
-            updateRecord(turn);
+            updateRecord(TeamNum);
             return true;
         }
         consecutive = 0;
-        //TODO
-        return false;
-    }
-
-    public void updateRecord(int turn){
-        this.thisRoundWinner = turn % 2 == 0 ? team1Player : team2Player;
-        if(thisRoundWinner.equals(team1Player)){
-            teamList.get(0).setWinTime(teamList.get(0).getWinTime() + 1);
-        }else{
-            teamList.get(1).setWinTime(teamList.get(1).getWinTime() + 1);
+        if(row==col && row % 2 == 0){
+            for(int i=0;i<boardArray.length;i+=2){
+                if(!boardArray[row][col].equals(curPieceType)){
+                    break;
+                }else{
+                    consecutive++;
+                }
+            }
         }
+        if(consecutive == boardScaleRow){
+            updateRecord(TeamNum);
+            return true;
+        }
+        consecutive = 0;
+        if(row + col ==  boardArray.length -1){
+            for(int i=0,j=boardArray.length -1;i<boardArray.length && j >=0;i+=2,j-=2){
+                if(!boardArray[row][col].equals(curPieceType)){
+                    break;
+                }else{
+                    consecutive++;
+                }
+            }
+        }
+        if(consecutive == boardScaleRow){
+            updateRecord(TeamNum);
+            return true;
+        }
+        return false;
     }
 
     public Piece createPiece(int turn){

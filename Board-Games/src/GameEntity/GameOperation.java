@@ -29,8 +29,9 @@ public class GameOperation {
         menu();
     }
 
-    public GameOperation(int gameType, int boardScaleRow){
+    public GameOperation(int gameType, int boardScaleRow, int boardScaleCol){
         this.boardScaleRow = boardScaleRow;
+        this.boardScaleCol = boardScaleCol;
         this.gameType = gameType;
         teamList = new ArrayList<>();
         menu();
@@ -41,6 +42,7 @@ public class GameOperation {
         createTeam(2);
         selectRoundPlayer(0);
         selectRoundPlayer(1);
+        selectCharacterForPlayer();
         initialBoard();
         Gaming();
     }
@@ -91,7 +93,20 @@ public class GameOperation {
         }
     }
 
-    public void updateRecord(int turn){
+    public void updateRecord(int TeamNum){
+        if(TeamNum == 0){
+            this.thisRoundWinner = team1Player;
+        }else{
+            this.thisRoundWinner = team2Player;
+        }
+        teamList.get(TeamNum).setWinTime(teamList.get(0).getWinTime() + 1);
+        Player winner = this.thisRoundWinner;
+        winner.setWinTimes(winner.getWinTimes() + 1);
+        System.out.println("Congratulate " + this.thisRoundWinner.getName() + " win the game!");
+    }
+
+    public void selectCharacterForPlayer(){
+
     }
 
     public void selectRoundPlayer(int TeamNum){
@@ -145,9 +160,6 @@ public class GameOperation {
 
     public boolean menuAfterGame(){
         Scanner scanner = new Scanner(System.in);
-        Player winner = this.thisRoundWinner;
-        winner.setWinTimes(winner.getWinTimes() + 1);
-        System.out.println("Congratulate " + this.thisRoundWinner.getName() + " win the game!");
         boolean loop;
         do{
             System.out.println();
