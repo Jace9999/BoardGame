@@ -19,8 +19,6 @@ public class GameOperation {
     protected int boardScaleCol;
     protected Board board;
 
-    protected int playerDecision;
-
     protected int gameType;
 
     public GameOperation(int gameType){
@@ -43,7 +41,6 @@ public class GameOperation {
         selectRoundPlayer(0);
         selectRoundPlayer(1);
         selectCharacterForPlayer();
-        initialBoard();
         Gaming();
     }
 
@@ -75,11 +72,7 @@ public class GameOperation {
         String symbol = PieceType.getSymbolByIndex(type);
         boardArray[row*2-2][col*2-2] = symbol;
         this.board.setBoardArray(boardArray);
-        if(turn < this.boardScaleRow * 2 - 2){
-            return false;
-        }else{
-            return checkEnd(piece, turn);
-        }
+        return checkEnd(piece, turn);
     }
 
     public void printBattleRecord(){
@@ -158,24 +151,23 @@ public class GameOperation {
         board.setBoardArray(boardArray);
     }
 
-    public boolean menuAfterGame(){
+    public boolean continuePlayGame(){
         Scanner scanner = new Scanner(System.in);
         boolean loop;
         do{
             System.out.println();
-            System.out.println("Press 1 to continue play Tic Tac Toe.");
+            System.out.println("Press 1 to continue play this game.");
             System.out.println("Press 2 to check battle record.");
-            System.out.println("Press 8 to exit game.");
+            System.out.println("Press 8 to return to main menu.");
             int choice = scanner.nextInt();
             switch (choice) {
                 case 1:
-                    return false;
+                    return true;
                 case 2:
                     printBattleRecord();
                     loop = true;
                     break;
                 case 8:
-                    this.playerDecision = 0;
                     return false;
                 default:
                     loop = true;
@@ -198,6 +190,7 @@ public class GameOperation {
     public void Gaming() {
         boolean continueGame;
         do{
+            initialBoard();
             int turn = 0;
             boolean isEnd;
             do{
@@ -205,7 +198,8 @@ public class GameOperation {
                 isEnd = this.placePiece(turn,piece);
                 turn++;
             }while(!isEnd);
-            continueGame = menuAfterGame();
+            printBoard();
+            continueGame = continuePlayGame();
         }while(continueGame);
     }
 

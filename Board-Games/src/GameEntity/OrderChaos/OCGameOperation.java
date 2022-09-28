@@ -34,7 +34,6 @@ public class OCGameOperation extends GameOperation {
 
     @Override
     public boolean checkEnd(Piece piece, int turn) {
-        int TeamNum = turn % 2 == 0 ? 0 : 1;
         int col = piece.getCol();
         int row = piece.getRow();
         row = row * 2 - 2;
@@ -50,7 +49,7 @@ public class OCGameOperation extends GameOperation {
                 consecutive++;
             }
         }
-        if(consecutive == boardScaleRow){
+        if(consecutive == WinRequire){
             updateRecord(orderPlayerTeam);
             return true;
         }
@@ -62,21 +61,21 @@ public class OCGameOperation extends GameOperation {
                 consecutive++;
             }
         }
-        if(consecutive == boardScaleRow){
+        if(consecutive == WinRequire){
             updateRecord(orderPlayerTeam);
             return true;
         }
         consecutive = 0;
-        if(row==col && row % 2 == 0){
+        if(row==col){
             for(int i=0;i<boardArray.length;i+=2){
-                if(!boardArray[row][col].equals(curPieceType)){
+                if(!boardArray[i][i].equals(curPieceType)){
                     break;
                 }else{
                     consecutive++;
                 }
             }
         }
-        if(consecutive == boardScaleRow){
+        if(consecutive == WinRequire){
             updateRecord(orderPlayerTeam);
             return true;
         }
@@ -90,7 +89,7 @@ public class OCGameOperation extends GameOperation {
                 }
             }
         }
-        if(consecutive == boardScaleRow){
+        if(consecutive == WinRequire){
             updateRecord(orderPlayerTeam);
             return true;
         }
