@@ -207,4 +207,68 @@ public class GameOperation {
         return null;
     }
 
+    public boolean checkPieceCoherent(Piece piece, int requireNum){
+        int col = piece.getCol();
+        int row = piece.getRow();
+        row = row * 2 - 2;
+        col = col * 2 - 2;
+        String[][] boardArray = this.board.getBoardArray();
+        int type = piece.getType();
+        int consecutive = 0;
+        String curPieceType = PieceType.getSymbolByIndex(type);
+        for(int i=0;i<boardArray[0].length;i+=2){
+            if(!boardArray[row][i].equals(curPieceType)){
+                break;
+            }else{
+                consecutive++;
+            }
+        }
+        if(consecutive == requireNum){
+            return true;
+        }
+        consecutive = 0;
+        for(int i=0;i<boardArray.length;i+=2){
+            if(!boardArray[i][col].equals(curPieceType)){
+                break;
+            }else{
+                consecutive++;
+            }
+        }
+        if(consecutive == requireNum){
+            return true;
+        }
+        consecutive = 0;
+        if(row==col){
+            for(int i=0;i<boardArray.length;i+=2){
+                if(!boardArray[i][i].equals(curPieceType)){
+                    break;
+                }else{
+                    consecutive++;
+                }
+            }
+        }
+        if(consecutive == requireNum){
+            return true;
+        }
+        consecutive = 0;
+        if(row + col ==  boardArray.length -1){
+            for(int i=0,j=boardArray.length -1;i<boardArray.length && j >=0;i+=2,j-=2){
+                if(!boardArray[row][col].equals(curPieceType)){
+                    break;
+                }else{
+                    consecutive++;
+                }
+            }
+        }
+        if(consecutive == requireNum){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean verifyTypedPosition(int row, int col){
+
+        return false;
+    }
+
 }

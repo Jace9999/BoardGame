@@ -19,64 +19,10 @@ public class TTTGameOperation extends GameOperation {
 
     @Override
     public boolean checkEnd(Piece piece, int turn) {
-        int TeamNum = turn % 2 == 0 ? 0 : 1;
-        int col = piece.getCol();
-        int row = piece.getRow();
-        row = row * 2 - 2;
-        col = col * 2 - 2;
-        String[][] boardArray = this.board.getBoardArray();
-        int type = piece.getType();
-        int consecutive = 0;
-        String curPieceType = PieceType.getSymbolByIndex(type);
-        for(int i=0;i<boardArray[0].length;i+=2){
-            if(!boardArray[row][i].equals(curPieceType)){
-                break;
-            }else{
-                consecutive++;
-            }
-        }
-        if(consecutive == boardScaleRow){
-            updateRecord(TeamNum);
-            return true;
-        }
-        consecutive = 0;
-        for(int i=0;i<boardArray.length;i+=2){
-            if(!boardArray[i][col].equals(curPieceType)){
-                break;
-            }else{
-                consecutive++;
-            }
-        }
-        if(consecutive == boardScaleRow){
-            updateRecord(TeamNum);
-            return true;
-        }
-        consecutive = 0;
-        if(row==col && row % 2 == 0){
-            for(int i=0;i<boardArray.length;i+=2){
-                if(!boardArray[row][col].equals(curPieceType)){
-                    break;
-                }else{
-                    consecutive++;
-                }
-            }
-        }
-        if(consecutive == boardScaleRow){
-            updateRecord(TeamNum);
-            return true;
-        }
-        consecutive = 0;
-        if(row + col ==  boardArray.length -1){
-            for(int i=0,j=boardArray.length -1;i<boardArray.length && j >=0;i+=2,j-=2){
-                if(!boardArray[row][col].equals(curPieceType)){
-                    break;
-                }else{
-                    consecutive++;
-                }
-            }
-        }
-        if(consecutive == boardScaleRow){
-            updateRecord(TeamNum);
+        int teamNum = turn % 2 == 0 ? 0 : 1;
+        boolean flag = checkPieceCoherent(piece, 5);
+        if(flag){
+            updateRecord(teamNum);
             return true;
         }
         return false;
