@@ -9,7 +9,7 @@ public class OCGameOperation extends GameOperation {
     private int orderPlayerTeam;
     private int chaoPlayerTeam;
 
-    private final static int WinRequire =5;
+    public final static int WinRequireNum =5;
 
     public OCGameOperation(int gameType, int boardScaleRow, int boardScaleCol) {
         super(gameType, boardScaleRow, boardScaleCol);
@@ -23,18 +23,13 @@ public class OCGameOperation extends GameOperation {
     public void selectCharacterForPlayer(){
         System.out.println("Please enter the player number of Order");
         int num = new Scanner(System.in).nextInt();
-        if(num == 1){
-            orderPlayerTeam= 0;
-            chaoPlayerTeam = 1;
-        }else{
-            orderPlayerTeam= 1;
-            chaoPlayerTeam = 0;
-        }
+        orderPlayerTeam = num - 1;
+        chaoPlayerTeam = num;
     }
 
     @Override
     public boolean checkEnd(Piece piece, int turn) {
-        boolean flag = checkPieceCoherent(piece, 5);
+        boolean flag = checkPieceCoherent(piece, WinRequireNum);
         if(flag){
             updateRecord(orderPlayerTeam);
             return true;
@@ -50,15 +45,23 @@ public class OCGameOperation extends GameOperation {
         printBoard();
         int playerNum = turn % 2 + 1;
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter piece type for Player " + playerNum);
-        String symbol = scanner.nextLine();
-        System.out.println("Enter the position for Player " + playerNum);
-        String position = scanner.nextLine();
-        String[] split = position.split(",");
-        int row = Integer.parseInt(split[0]);
-        int col = Integer.parseInt(split[1]);
-        int pieceType = PieceType.getTypeNumBySymbol(symbol);
-        return new Piece(pieceType, 0,row,col);
+        String symbol;
+        boolean symbolAvailability;
+        int pieceType;
+        do{
+            symbolAvailability = true;
+            System.out.println("Enter piece type for Player " + playerNum);
+            symbol = scanner.nextLine();
+            pieceType = PieceType.getTypeNumBySymbol(symbol);
+            if(pieceType == 99){
+                System.out.println("This symbol is not valid, you only can choose \"X\" or \"O\" !");
+                symbolAvailability = false;
+            }
+        }while(!symbolAvailability);
+
+        return validPosition(playerNum, pieceType);
     }
+
+
 
 }

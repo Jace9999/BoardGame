@@ -27,7 +27,7 @@ public enum PieceType {
                 return type.getTypeNum();
             }
         }
-        return 0;
+        return 99;
     }
     public String getSymbol() {
         return symbol;

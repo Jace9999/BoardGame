@@ -3,13 +3,19 @@ package GameEntity;
 public class Board {
     private int map_row;
     private int map_column;
-    private String boardArray[][];
+    private Unit boardArray[][];
 
-    public String[][] getBoardArray() {
+    public Board(int map_row, int map_column, Unit[][] boardArray) {
+        this.map_row = map_row;
+        this.map_column = map_column;
+        this.boardArray = boardArray;
+    }
+
+    public Unit[][] getBoardArray() {
         return boardArray;
     }
 
-    public void setBoardArray(String[][] boardArray) {
+    public void setBoardArray(Unit[][] boardArray) {
         this.boardArray = boardArray;
     }
 

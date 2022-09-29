@@ -32,10 +32,6 @@ public class Team {
         this.playerList = playerList;
     }
 
-    public void addNewPlayer(Player player){
-        playerList.add(player);
-    }
-
     public int getWinTime() {
         return winTime;
     }
@@ -52,19 +48,4 @@ public class Team {
         this.stalemateTime = stalemateTime;
     }
 
-    public void removePlayer(String name){
-        if(playerList.size() == 0){
-            throw new RuntimeException("Current Team do not has any player.");
-        }
-        boolean find = false;
-        for(int i=0;i<playerList.size();i++){
-            if(playerList.get(i).getName().equals(name)){
-                playerList.remove(i);
-                find = true;
-            }
-        }
-        if(!find){
-            throw new RuntimeException("Player Name is not correct.");
-        }
-    }
 }

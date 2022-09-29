@@ -4,13 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class GameOperation {
+public abstract class GameOperation {
 
     protected List<Team> teamList;
-
-    protected Player team1Player;
-
-    protected Player team2Player;
 
     protected Player thisRoundWinner;
 
@@ -20,6 +16,11 @@ public class GameOperation {
     protected Board board;
 
     protected int gameType;
+
+    public static final int TeamOneIndex = 0;
+    public static final int TeamTwoIndex = 1;
+
+    public static final int StalemateIndex = 99;
 
     public GameOperation(int gameType){
         this.gameType = gameType;
@@ -36,16 +37,17 @@ public class GameOperation {
     }
 
     public void menu() {
-        createTeam(1);
-        createTeam(2);
-        selectRoundPlayer(0);
-        selectRoundPlayer(1);
+        createTeam(TeamOneIndex);
+        createTeam(TeamTwoIndex);
+        selectRoundPlayer(TeamOneIndex);
+        selectRoundPlayer(TeamTwoIndex);
         selectCharacterForPlayer();
         Gaming();
     }
 
 
-    public void createTeam(int teamNum){
+    public void createTeam(int teamIndexNum){
+        int teamNum = teamIndexNum + 1;
         System.out.println("Please enter the player name for team " + teamNum + ", end with /");
         Team team = new Team();
         List<Player> playerList = new ArrayList<>();
@@ -65,12 +67,13 @@ public class GameOperation {
     }
 
     public boolean placePiece(int turn, Piece piece) {
-        String[][] boardArray = this.board.getBoardArray();
+        Unit[][] boardArray = this.board.getBoardArray();
         int row = piece.getRow();
         int col = piece.getCol();
         int type = piece.getType();
         String symbol = PieceType.getSymbolByIndex(type);
-        boardArray[row*2-2][col*2-2] = symbol;
+        boardArray[row][col].setSymbol(symbol);
+        boardArray[row][col].setOccupied(true);
         this.board.setBoardArray(boardArray);
         return checkEnd(piece, turn);
     }
@@ -78,49 +81,45 @@ public class GameOperation {
     public void printBattleRecord(){
         int teamNum = 1;
         for(Team team: this.teamList){
-            System.out.println("The total win time of team " + teamNum  + " is " + team.getWinTime());
+            System.out.println("The total win time of team " + teamNum  + " is " + team.getWinTime() + " time, and stalemate time is " + team.getStalemateTime());
             teamNum++;
             for(Player player: team.getPlayerList()){
-                System.out.println(player.getName() + " has won " + player.getWinTimes() + " and stalemate time is " + player.getStalemateTime());
+                System.out.println("Player " + player.getName() + " has won " + player.getWinTimes() + " time, and stalemate time is " + player.getStalemateTime());
             }
         }
     }
 
-    public void updateRecord(int TeamNum){
-        if(TeamNum == 0){
-            this.thisRoundWinner = team1Player;
+    public void updateRecord(int teamNum){
+        if(teamNum == StalemateIndex){
+            System.out.println("This round game is stalemate.....");
+            for(Team team : this.teamList){
+                team.setStalemateTime(team.getStalemateTime() + 1);
+                Player thisGamePlayer = team.getNextGamePlayer();
+                thisGamePlayer.setStalemateTime(thisGamePlayer.getStalemateTime() + 1);
+            }
         }else{
-            this.thisRoundWinner = team2Player;
+            Team winnerTeam = this.teamList.get(teamNum);
+            this.thisRoundWinner = winnerTeam.getNextGamePlayer();
+            winnerTeam.setWinTime(winnerTeam.getWinTime() + 1);
+            Player winner = this.thisRoundWinner;
+            winner.setWinTimes(winner.getWinTimes() + 1);
+            System.out.println("Congratulate " + this.thisRoundWinner.getName() + " win the game!");
         }
-        teamList.get(TeamNum).setWinTime(teamList.get(0).getWinTime() + 1);
-        Player winner = this.thisRoundWinner;
-        winner.setWinTimes(winner.getWinTimes() + 1);
-        System.out.println("Congratulate " + this.thisRoundWinner.getName() + " win the game!");
     }
 
-    public void selectCharacterForPlayer(){
-
-    }
-
-    public void selectRoundPlayer(int TeamNum){
-        System.out.println("Select player in team" + TeamNum + 1 + " for this round game, Enter Player Index");
+    public void selectRoundPlayer(int teamIndexNum){
+        int teamNum = teamIndexNum + 1;
+        System.out.println("Select player in team" + teamNum + " for this round game, Enter Player Index");
         int index = 1;
-        for(Player player: this.teamList.get(TeamNum).getPlayerList()){
-            System.out.println(index + " " + player.getName());
+        for(Player player : teamList.get(teamIndexNum).getPlayerList()){
+            System.out.println(index + ". " + player.getName());
             index++;
         }
+
         Scanner scanner = new Scanner(System.in);
         int playerIndex = scanner.nextInt();
-        teamList.get(TeamNum).setNextGamePlayer(playerIndex-1);
-        if(TeamNum == 0){
-            this.team1Player =  teamList.get(TeamNum).getNextGamePlayer();
-        }else{
-            this.team2Player =  teamList.get(TeamNum).getNextGamePlayer();
-        }
-    }
-
-    public boolean checkEnd(Piece piece, int turn) {
-        return  false;
+        playerIndex = playerIndex - 1;
+        this.teamList.get(teamIndexNum).setNextGamePlayer(playerIndex);
     }
 
     public void initialBoard() {
@@ -132,20 +131,10 @@ public class GameOperation {
             this.boardScaleCol = scaleSize;
         }
         this.board = new Board(boardScaleRow, boardScaleCol);
-        int rowLength = (board.getMap_row() * 2)- 1;
-        int colLength = (board.getMap_column() * 2) - 1;
-        String[][] boardArray = new String[rowLength][colLength];
-        for(int i=0;i<rowLength;i++){
-            for(int j=0;j<colLength;j++){
-                if(i % 2 == 0 && j % 2 == 0){
-                    boardArray[i][j] = " ";
-                }else if(i % 2 == 0 && j % 2 == 1){
-                    boardArray[i][j] = "|";
-                }else if(i % 2 == 1 && j % 2 == 0){
-                    boardArray[i][j] = "-";
-                }else if(i % 2 == 1 && j % 2 == 1){
-                    boardArray[i][j] = "+";
-                }
+        Unit[][] boardArray = new Unit[boardScaleRow][boardScaleCol];
+        for(int i=0;i<boardArray.length;i++){
+            for(int j=0;j<boardArray[0].length;j++){
+                boardArray[i][j] = new Unit(" ", false);
             }
         }
         board.setBoardArray(boardArray);
@@ -159,15 +148,15 @@ public class GameOperation {
             System.out.println("Press 1 to continue play this game.");
             System.out.println("Press 2 to check battle record.");
             System.out.println("Press 8 to return to main menu.");
-            int choice = scanner.nextInt();
+            String choice = scanner.nextLine();
             switch (choice) {
-                case 1:
+                case "1":
                     return true;
-                case 2:
+                case "2":
                     printBattleRecord();
                     loop = true;
                     break;
-                case 8:
+                case "8":
                     return false;
                 default:
                     loop = true;
@@ -178,10 +167,17 @@ public class GameOperation {
     }
 
     public void printBoard(){
-        String[][] boardArray = this.board.getBoardArray();
+        Unit[][] boardArray = this.board.getBoardArray();
         for(int i=0;i<boardArray.length;i++){
             for (int j=0;j<boardArray[0].length;j++){
-                System.out.print(boardArray[i][j]);
+                System.out.print(boardArray[i][j].getSymbol());
+                if(j < boardArray[0].length - 1){
+                    System.out.print("|");
+                }
+            }
+            System.out.println();
+            for(int col=0;col<boardArray.length * 2;col++){
+                System.out.print("-");
             }
             System.out.println();
         }
@@ -203,21 +199,16 @@ public class GameOperation {
         }while(continueGame);
     }
 
-    public Piece createPiece(int turn){
-        return null;
-    }
 
     public boolean checkPieceCoherent(Piece piece, int requireNum){
         int col = piece.getCol();
         int row = piece.getRow();
-        row = row * 2 - 2;
-        col = col * 2 - 2;
-        String[][] boardArray = this.board.getBoardArray();
+        Unit[][] boardArray = this.board.getBoardArray();
         int type = piece.getType();
         int consecutive = 0;
         String curPieceType = PieceType.getSymbolByIndex(type);
-        for(int i=0;i<boardArray[0].length;i+=2){
-            if(!boardArray[row][i].equals(curPieceType)){
+        for(int i=0;i<boardArray[0].length;i++){
+            if(!boardArray[row][i].getSymbol().equals(curPieceType)){
                 break;
             }else{
                 consecutive++;
@@ -227,8 +218,8 @@ public class GameOperation {
             return true;
         }
         consecutive = 0;
-        for(int i=0;i<boardArray.length;i+=2){
-            if(!boardArray[i][col].equals(curPieceType)){
+        for(int i=0;i<boardArray.length;i++){
+            if(!boardArray[i][col].getSymbol().equals(curPieceType)){
                 break;
             }else{
                 consecutive++;
@@ -238,37 +229,85 @@ public class GameOperation {
             return true;
         }
         consecutive = 0;
-        if(row==col){
-            for(int i=0;i<boardArray.length;i+=2){
-                if(!boardArray[i][i].equals(curPieceType)){
-                    break;
-                }else{
-                    consecutive++;
-                }
+        for(int r = row,c = col;r>=0 && c>=0;r--,c--){
+            if(!boardArray[r][c].getSymbol().equals(curPieceType)){
+                break;
+            }else{
+                consecutive++;
             }
         }
-        if(consecutive == requireNum){
+        for(int r = row,c = col;r< boardArray.length && c< boardArray[0].length;r++,c++){
+            if(!boardArray[r][c].getSymbol().equals(curPieceType)){
+                break;
+            }else{
+                consecutive++;
+            }
+        }
+        if(consecutive == requireNum+1){
             return true;
         }
         consecutive = 0;
-        if(row + col ==  boardArray.length -1){
-            for(int i=0,j=boardArray.length -1;i<boardArray.length && j >=0;i+=2,j-=2){
-                if(!boardArray[row][col].equals(curPieceType)){
-                    break;
-                }else{
-                    consecutive++;
-                }
+        for(int r = row,c = col;r>=0 && c < boardArray[0].length;r--,c++){
+            if(!boardArray[r][c].getSymbol().equals(curPieceType)){
+                break;
+            }else{
+                consecutive++;
             }
         }
-        if(consecutive == requireNum){
+        for(int r = row, c = col;r<boardArray.length && c >=0;r++,c--){
+            if(!boardArray[r][c].getSymbol().equals(curPieceType)){
+                break;
+            }else{
+                consecutive++;
+            }
+        }
+        if(consecutive == requireNum+1){
             return true;
         }
         return false;
     }
 
     public boolean verifyTypedPosition(int row, int col){
-
-        return false;
+        if(row >= this.boardScaleCol || row < 0|| col >= this.boardScaleCol || col < 0){
+            return false;
+        }
+        Unit[][] boardArray = this.board.getBoardArray();
+        if(boardArray[row][col].getOccupied()){
+            return false;
+        }
+        return true;
     }
 
+    public Piece validPosition(int playerNum, int pieceType){
+        int row = 0;
+        int col = 0;
+        boolean positionAvailability;
+        Scanner scanner = new Scanner(System.in);
+        do {
+            System.out.println("Enter the position for Player " + playerNum);
+            String position = scanner.nextLine();
+            String[] split = position.split(",");
+            try{
+                row = Integer.parseInt(split[0]);
+                col = Integer.parseInt(split[1]);
+                row = row-1;
+                col = col-1;
+            }catch (RuntimeException e){
+                System.out.println("This position format is not correct, please type like \"1,1\"");
+                positionAvailability = false;
+                continue;
+            }
+            positionAvailability = verifyTypedPosition(row, col);
+            if(!positionAvailability){
+                System.out.println("This position is not available, please try again.");
+            }
+        }while(!positionAvailability);
+        return new Piece(pieceType,row,col);
+    }
+
+    public abstract Piece createPiece(int turn);
+
+    public abstract boolean checkEnd(Piece piece, int turn);
+
+    public abstract void selectCharacterForPlayer();
 }
