@@ -1,5 +1,6 @@
 package GameEntity;
 
+//using for connect game index with game name
 public enum GameType {
     TicTacToe(0, "TicTacToe"),
     OrderChaos(1, "OrderChaos");

@@ -22,7 +22,7 @@ public class Game {
                     new TTTGameOperation(GameType.TicTacToe.getGameType());
                     break;
                 case "2":
-                    new OCGameOperation(GameType.OrderChaos.getGameType(), 6,6);
+                    new OCGameOperation(GameType.OrderChaos.getGameType(), 6);
                     break;
                 case "8":
                     loop = false;

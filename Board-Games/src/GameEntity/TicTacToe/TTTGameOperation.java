@@ -12,20 +12,20 @@ public class TTTGameOperation extends GameOperation {
     }
 
     @Override
-    public void menu() {
-        System.out.println("Welcome to Tic Tac Toe");
-        super.menu();
+    public void enterGame() {
+        System.out.println("Welcome to Order & Chaos");
+        super.enterGame();
     }
 
     @Override
     public boolean checkEnd(Piece piece, int turn) {
         int teamNum = turn % 2 == 0 ? TeamOneIndex : TeamTwoIndex;
-        boolean flag = checkPieceCoherent(piece, this.boardScaleCol);
+        boolean flag = checkPieceCoherent(piece, this.boardSize);
         if(flag){
             updateRecord(teamNum);
             return true;
         }
-        if(turn == boardScaleRow * boardScaleRow - 1){
+        if(turn == boardSize * boardSize - 1){
             updateRecord(StalemateIndex);
             return true;
         }
@@ -42,6 +42,11 @@ public class TTTGameOperation extends GameOperation {
             pieceType = PieceType.O_Type.getTypeNum();
         }
         return validPosition(playerNum, pieceType);
+    }
+
+    public void initialBoard() {
+        setBoardSize();
+        super.initialBoard();
     }
 
     @Override

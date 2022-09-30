@@ -11,10 +11,6 @@ public class Team {
 
     private int nextGamePlayer;
 
-    public void printTeamBattleRecord(){
-
-    }
-
     public Player getNextGamePlayer(){
         Player player = playerList.get(nextGamePlayer);
         return player;

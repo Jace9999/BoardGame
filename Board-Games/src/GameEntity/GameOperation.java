@@ -10,9 +10,8 @@ public abstract class GameOperation {
 
     protected Player thisRoundWinner;
 
-    protected int boardScaleRow;
+    protected int boardSize;
 
-    protected int boardScaleCol;
     protected Board board;
 
     protected int gameType;
@@ -25,27 +24,24 @@ public abstract class GameOperation {
     public GameOperation(int gameType){
         this.gameType = gameType;
         teamList = new ArrayList<>();
-        menu();
+        enterGame();
     }
 
-    public GameOperation(int gameType, int boardScaleRow, int boardScaleCol){
-        this.boardScaleRow = boardScaleRow;
-        this.boardScaleCol = boardScaleCol;
+    // Constructor for board game which has fixed board size
+    public GameOperation(int gameType, int boardSize){
+        this.boardSize = boardSize;
         this.gameType = gameType;
         teamList = new ArrayList<>();
-        menu();
+        enterGame();
     }
 
-    public void menu() {
+    public void enterGame(){
         createTeam(TeamOneIndex);
         createTeam(TeamTwoIndex);
-        selectRoundPlayer(TeamOneIndex);
-        selectRoundPlayer(TeamTwoIndex);
-        selectCharacterForPlayer();
         Gaming();
     }
 
-
+    //used for create team and create team member in this team
     public void createTeam(int teamIndexNum){
         int teamNum = teamIndexNum + 1;
         System.out.println("Please enter the player name for team " + teamNum + ", end with /");
@@ -54,7 +50,10 @@ public abstract class GameOperation {
         Scanner scanner = new Scanner(System.in);
         String s ="";
         while(true){
-            s = scanner.nextLine();
+            s = scanner.nextLine().trim();
+            if(s== "" || s.length() == 0 ){
+                continue;
+            }
             if(s.equals("/")){
                 break;
             }
@@ -64,6 +63,59 @@ public abstract class GameOperation {
         }
         team.setPlayerList(playerList);
         this.teamList.add(team);
+    }
+
+    public void Gaming() {
+        boolean continueGame;
+        do{
+            selectRoundPlayer(TeamOneIndex);
+            selectRoundPlayer(TeamTwoIndex);
+            selectCharacterForPlayer();
+            initialBoard();
+            int turn = 0;
+            boolean isEnd;
+            do{
+                // create a new piece, check for position availability
+                Piece piece = createPiece(turn);
+                // if it is valid, then check if is end;
+                isEnd = this.placePiece(turn,piece);
+                turn++;
+            }while(!isEnd);
+            printBoard();
+            continueGame = continuePlayGame();
+        }while(continueGame);
+    }
+
+    //selected player for this round game
+    public void selectRoundPlayer(int teamIndexNum){
+        int teamNum = teamIndexNum + 1;
+        boolean valid;
+        int playerIndex = 0;
+        do {
+            valid = true;
+            System.out.println("Select player in team" + teamNum + " for this round game, Enter Player Index");
+            int index = 1;
+            for (Player player : teamList.get(teamIndexNum).getPlayerList()) {
+                System.out.println(index + ". " + player.getName());
+                index++;
+            }
+            Scanner scanner = new Scanner(System.in);
+            try{
+                playerIndex = Integer.parseInt(scanner.nextLine());
+            }catch (RuntimeException e){
+                System.out.println("Please enter a valid number !");
+                System.out.println();
+                valid = false;
+                continue;
+            }
+            playerIndex = playerIndex - 1;
+            if(playerIndex < 0 || playerIndex > teamList.get(teamIndexNum).getPlayerList().size() - 1){
+                System.out.println("Please enter a valid number !");
+                System.out.println();
+                valid = false;
+            }
+        }while (!valid);
+        this.teamList.get(teamIndexNum).setNextGamePlayer(playerIndex);
     }
 
     public boolean placePiece(int turn, Piece piece) {
@@ -103,41 +155,32 @@ public abstract class GameOperation {
             winnerTeam.setWinTime(winnerTeam.getWinTime() + 1);
             Player winner = this.thisRoundWinner;
             winner.setWinTimes(winner.getWinTimes() + 1);
+            System.out.println();
             System.out.println("Congratulate " + this.thisRoundWinner.getName() + " win the game!");
         }
     }
 
-    public void selectRoundPlayer(int teamIndexNum){
-        int teamNum = teamIndexNum + 1;
-        System.out.println("Select player in team" + teamNum + " for this round game, Enter Player Index");
-        int index = 1;
-        for(Player player : teamList.get(teamIndexNum).getPlayerList()){
-            System.out.println(index + ". " + player.getName());
-            index++;
-        }
-
+    public void setBoardSize(){
         Scanner scanner = new Scanner(System.in);
-        int playerIndex = scanner.nextInt();
-        playerIndex = playerIndex - 1;
-        this.teamList.get(teamIndexNum).setNextGamePlayer(playerIndex);
-    }
-
-    public void initialBoard() {
-        Scanner scanner = new Scanner(System.in);
-        if(this.gameType != GameType.OrderChaos.getGameType()){
-            System.out.println("Please enter the scale for the game board, for example: 3 means 3x3, 6 means 6x6");
-            int scaleSize = scanner.nextInt();
-            this.boardScaleRow = scaleSize;
-            this.boardScaleCol = scaleSize;
-        }
-        this.board = new Board(boardScaleRow, boardScaleCol);
-        Unit[][] boardArray = new Unit[boardScaleRow][boardScaleCol];
-        for(int i=0;i<boardArray.length;i++){
-            for(int j=0;j<boardArray[0].length;j++){
-                boardArray[i][j] = new Unit(" ", false);
+        int scaleSize = 0;
+        boolean valid;
+        do {
+            valid = false;
+            System.out.println("Please enter the scale for the game board, for example: 3 means 3x3, 6 means 6x6.");
+            System.out.println("Maximum is 10 and minimum size is 3.");
+            try{
+                scaleSize = Integer.parseInt(scanner.nextLine());
+                valid = true;
+            }catch (RuntimeException e){
+                System.out.println("Please enter a valid number !");
+                System.out.println();
             }
-        }
-        board.setBoardArray(boardArray);
+            if(scaleSize < 3 || scaleSize > 10){
+                valid = false;
+            }
+        }while (!valid);
+        this.boardSize = scaleSize;
+
     }
 
     public boolean continuePlayGame(){
@@ -183,22 +226,6 @@ public abstract class GameOperation {
         }
     }
 
-    public void Gaming() {
-        boolean continueGame;
-        do{
-            initialBoard();
-            int turn = 0;
-            boolean isEnd;
-            do{
-                Piece piece = createPiece(turn);
-                isEnd = this.placePiece(turn,piece);
-                turn++;
-            }while(!isEnd);
-            printBoard();
-            continueGame = continuePlayGame();
-        }while(continueGame);
-    }
-
 
     public boolean checkPieceCoherent(Piece piece, int requireNum){
         int col = piece.getCol();
@@ -207,6 +234,7 @@ public abstract class GameOperation {
         int type = piece.getType();
         int consecutive = 0;
         String curPieceType = PieceType.getSymbolByIndex(type);
+        //check for same row
         for(int i=0;i<boardArray[0].length;i++){
             if(!boardArray[row][i].getSymbol().equals(curPieceType)){
                 break;
@@ -218,6 +246,7 @@ public abstract class GameOperation {
             return true;
         }
         consecutive = 0;
+        //check for same colum
         for(int i=0;i<boardArray.length;i++){
             if(!boardArray[i][col].getSymbol().equals(curPieceType)){
                 break;
@@ -229,6 +258,7 @@ public abstract class GameOperation {
             return true;
         }
         consecutive = 0;
+        // check for left diagonal
         for(int r = row,c = col;r>=0 && c>=0;r--,c--){
             if(!boardArray[r][c].getSymbol().equals(curPieceType)){
                 break;
@@ -247,6 +277,7 @@ public abstract class GameOperation {
             return true;
         }
         consecutive = 0;
+        //check for right diagonal
         for(int r = row,c = col;r>=0 && c < boardArray[0].length;r--,c++){
             if(!boardArray[r][c].getSymbol().equals(curPieceType)){
                 break;
@@ -268,7 +299,7 @@ public abstract class GameOperation {
     }
 
     public boolean verifyTypedPosition(int row, int col){
-        if(row >= this.boardScaleCol || row < 0|| col >= this.boardScaleCol || col < 0){
+        if(row >= this.boardSize || row < 0|| col >= this.boardSize || col < 0){
             return false;
         }
         Unit[][] boardArray = this.board.getBoardArray();
@@ -288,6 +319,7 @@ public abstract class GameOperation {
             String position = scanner.nextLine();
             String[] split = position.split(",");
             try{
+                // checked for invalid input format
                 row = Integer.parseInt(split[0]);
                 col = Integer.parseInt(split[1]);
                 row = row-1;
@@ -305,9 +337,22 @@ public abstract class GameOperation {
         return new Piece(pieceType,row,col);
     }
 
+    public void initialBoard(){
+        this.board = new Board(this.boardSize);
+        Unit[][] boardArray = new Unit[boardSize][boardSize];
+        for(int i=0;i<boardArray.length;i++){
+            for(int j=0;j<boardArray[0].length;j++){
+                boardArray[i][j] = new Unit(" ", false);
+            }
+        }
+        board.setBoardArray(boardArray);
+    }
+
     public abstract Piece createPiece(int turn);
 
     public abstract boolean checkEnd(Piece piece, int turn);
 
+    // some game require select a character before play the game, like Order & Chaos
     public abstract void selectCharacterForPlayer();
+
 }

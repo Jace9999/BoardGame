@@ -11,20 +11,33 @@ public class OCGameOperation extends GameOperation {
 
     public final static int WinRequireNum =5;
 
-    public OCGameOperation(int gameType, int boardScaleRow, int boardScaleCol) {
-        super(gameType, boardScaleRow, boardScaleCol);
+    public OCGameOperation(int gameType, int boardSize) {
+        super(gameType, boardSize);
     }
 
     @Override
-    public void menu() {
+    public void enterGame() {
         System.out.println("Welcome to Order & Chaos");
-        super.menu();
+        super.enterGame();
     }
     public void selectCharacterForPlayer(){
-        System.out.println("Please enter the player number of Order");
-        int num = new Scanner(System.in).nextInt();
-        orderPlayerTeam = num - 1;
-        chaoPlayerTeam = num;
+        boolean valid;
+        do {
+            valid = true;
+            System.out.println("Please enter the team number for playing Order character");
+            try{
+                int num = Integer.parseInt(new Scanner(System.in).nextLine());
+                if(num <= 0 || num > this.teamList.size()){
+                    throw new RuntimeException();
+                }
+                orderPlayerTeam = num - 1;
+                chaoPlayerTeam = num;
+            }catch (RuntimeException e){
+                System.out.println("Invalid input, please enter a valid number!");
+                System.out.println();
+                valid = false;
+            }
+        }while (!valid);
     }
 
     @Override
@@ -34,13 +47,14 @@ public class OCGameOperation extends GameOperation {
             updateRecord(orderPlayerTeam);
             return true;
         }
-        if(turn == boardScaleRow * boardScaleRow - 1){
+        if(turn == boardSize * boardSize - 1){
             updateRecord(chaoPlayerTeam);
             return true;
         }
         return false;
     }
 
+    // create new piece and check if entered position is valid
     public Piece createPiece(int turn){
         printBoard();
         int playerNum = turn % 2 + 1;
@@ -61,7 +75,5 @@ public class OCGameOperation extends GameOperation {
 
         return validPosition(playerNum, pieceType);
     }
-
-
 
 }

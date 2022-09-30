@@ -1,5 +1,6 @@
 package GameEntity;
 
+//using for connect piece index with piece symbol
 public enum PieceType {
     X_Type(0, "X"),
     O_Type(1, "O");
